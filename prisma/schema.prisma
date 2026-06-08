@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?  @unique
+  phone       String
+  address     String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  cases       Case[]
+
+  @@map("customers")
+}
+
+model Case {
+  id              String      @id @default(cuid())
+  caseNumber      String      @unique
+  customerId      String
+  customer        Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  title           String
+  status          String      @default("intake")
+  priority        String      @default("normal")
+
+  laptopModel     String
+  serialNumber    String?
+  purchaseYear    Int?
+
+  issueType       String
+  issueDescription String
+  physicalCondition String     @default("good")
+
+  diagnosticNotes  String?
+  repairNotes      String?
+  partsUsed        String?
+
+  estimatedCost    Float?
+  finalCost        Float?
+  depositPaid      Float?
+
+  estimatedCompletion DateTime?
+  completedAt     DateTime?
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  communications  Communication[]
+  notes           Note[]
+
+  @@map("cases")
+}
+
+model Communication {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  type      String
+  direction String   @default("outbound")
+  content   String
+  createdAt DateTime @default(now())
+
+  @@map("communications")
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+
+  @@map("notes")
+}

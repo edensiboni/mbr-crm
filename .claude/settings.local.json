@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Read(//usr/local/bin/**)",
+      "Read(//Users/MAC/.nvm/versions/**)",
+      "Read(//opt/homebrew/bin/**)",
+      "Bash(find /usr /opt /Users/MAC -name \"node\" -type f 2>/dev/null | head -5; find /Users/MAC -name \"npm\" -type f 2>/dev/null | head -3)",
+      "Bash(/usr/bin/env node *)",
+      "Bash(brew install *)",
+      "Bash(/opt/homebrew/bin/node --version)",
+      "Bash(/opt/homebrew/bin/npm --version)",
+      "Bash(/opt/homebrew/bin/npm install *)",
+      "Bash(/opt/homebrew/bin/npx prisma *)",
+      "Bash(/opt/homebrew/bin/npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(pkill -f \"next dev\")",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(gh auth *)",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ]
+  }
+}
