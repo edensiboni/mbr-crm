@@ -3,13 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Wrench,
-  LayoutDashboard,
-  FolderOpen,
-  Users,
-  Bot,
-  ExternalLink,
-  Settings,
+  Wrench, LayoutDashboard, FolderOpen, Users, Bot, ExternalLink, Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,18 +14,17 @@ const navItems = [
   { href: "/dashboard/agent", label: "AI Agent", icon: Bot },
 ];
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+
+  const isActive = (href: string) =>
+    href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-60 bg-gray-900 flex flex-col shrink-0">
-        {/* Logo */}
+
+      {/* ── Desktop Sidebar ── */}
+      <aside className="hidden md:flex w-60 bg-gray-900 flex-col shrink-0">
         <div className="h-16 flex items-center px-5 border-b border-gray-800">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -44,55 +37,72 @@ export default function DashboardLayout({
           </div>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1">
-          {navItems.map((item) => {
-            const active =
-              item.href === "/dashboard"
-                ? pathname === "/dashboard"
-                : pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                  active
-                    ? "bg-blue-600 text-white"
-                    : "text-gray-400 hover:text-white hover:bg-gray-800"
-                )}
-              >
-                <item.icon className="w-4 h-4" />
-                {item.label}
-              </Link>
-            );
-          })}
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                isActive(item.href)
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-400 hover:text-white hover:bg-gray-800"
+              )}
+            >
+              <item.icon className="w-4 h-4" />
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
-        {/* Bottom */}
         <div className="px-3 pb-4 space-y-1 border-t border-gray-800 pt-4">
-          <Link
-            href="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
-            target="_blank"
-          >
-            <ExternalLink className="w-4 h-4" />
-            Customer Site
+          <Link href="/" target="_blank"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
+            <ExternalLink className="w-4 h-4" />Customer Site
           </Link>
-          <Link
-            href="/dashboard/settings"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
-          >
-            <Settings className="w-4 h-4" />
-            Settings
+          <Link href="/dashboard/settings"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
+            <Settings className="w-4 h-4" />Settings
           </Link>
         </div>
       </aside>
 
-      {/* Main */}
-      <main className="flex-1 overflow-auto">
+      {/* ── Main content ── */}
+      <main className="flex-1 overflow-auto pb-20 md:pb-0">
+        {/* Mobile header */}
+        <div className="md:hidden flex items-center justify-between px-4 h-14 bg-gray-900 border-b border-gray-800 sticky top-0 z-30">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Wrench className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="font-bold text-white text-sm">M.B.R</span>
+          </div>
+          <Link href="/dashboard/settings" className="text-gray-400 hover:text-white">
+            <Settings className="w-5 h-5" />
+          </Link>
+        </div>
+
         {children}
       </main>
+
+      {/* ── Mobile Bottom Navigation ── */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-gray-900 border-t border-gray-800 flex">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "flex-1 flex flex-col items-center justify-center py-2 gap-1 text-xs font-medium transition-colors",
+              isActive(item.href)
+                ? "text-blue-400"
+                : "text-gray-500 hover:text-gray-300"
+            )}
+          >
+            <item.icon className={cn("w-5 h-5", isActive(item.href) && "text-blue-400")} />
+            <span className="text-[10px]">{item.label}</span>
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 }

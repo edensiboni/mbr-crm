@@ -5,7 +5,12 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   const { id } = await params;
   const c = await prisma.case.findUnique({
     where: { id },
-    include: { customer: true, notes: { orderBy: { createdAt: "desc" } }, communications: { orderBy: { createdAt: "desc" } } },
+    include: {
+      customer: true,
+      notes: { orderBy: { createdAt: "desc" } },
+      communications: { orderBy: { createdAt: "desc" } },
+      images: { orderBy: { createdAt: "asc" } },
+    },
   });
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(c);
@@ -14,6 +19,19 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await req.json();
+
+  // Guard: completing a case requires at least one completion image
+  if (body.status === "completed") {
+    const completionImages = await prisma.caseImage.count({
+      where: { caseId: id, type: "completion" },
+    });
+    if (completionImages === 0) {
+      return NextResponse.json(
+        { error: "Please upload at least one completion photo before closing this case." },
+        { status: 400 }
+      );
+    }
+  }
 
   const updated = await prisma.case.update({
     where: { id },
@@ -24,7 +42,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       finalCost: body.finalCost !== undefined ? parseFloat(body.finalCost) || null : undefined,
       depositPaid: body.depositPaid !== undefined ? parseFloat(body.depositPaid) || null : undefined,
     },
-    include: { customer: true, notes: true, communications: true },
+    include: { customer: true, notes: true, communications: true, images: { orderBy: { createdAt: "asc" } } },
   });
   return NextResponse.json(updated);
 }
