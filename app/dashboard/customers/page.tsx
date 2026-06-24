@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import Link from "next/link";
-import { Users, Phone, Mail, FolderOpen } from "lucide-react";
+import { Users, Phone, Mail, FolderOpen, Edit2 } from "lucide-react";
 import { format } from "date-fns";
 
 interface SearchParams { q?: string; }
@@ -54,9 +54,14 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-bold text-sm">
                   {cu.name.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-medium">
-                  {cu._count.cases} case{cu._count.cases !== 1 ? "s" : ""}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-medium">
+                    {cu._count.cases} case{cu._count.cases !== 1 ? "s" : ""}
+                  </span>
+                  <Link href={`/dashboard/customers/${cu.id}`} className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">{cu.name}</h3>
               <div className="space-y-1.5 mb-4">
@@ -80,6 +85,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                 </div>
               )}
               <p className="text-xs text-gray-400">Customer since {format(new Date(cu.createdAt), "MMM yyyy")}</p>
+              <Link href={`/dashboard/customers/${cu.id}`} className="mt-3 block text-xs text-blue-500 hover:text-blue-600 transition-colors">View profile & edit →</Link>
             </div>
           ))}
         </div>

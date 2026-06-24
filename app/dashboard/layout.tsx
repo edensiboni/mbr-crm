@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Wrench, LayoutDashboard, FolderOpen, Users, Bot, ExternalLink, Settings,
+  Wrench, LayoutDashboard, FolderOpen, Users, Bot, ExternalLink, Settings, ShoppingBag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +11,7 @@ const navItems = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/cases", label: "Cases", icon: FolderOpen },
   { href: "/dashboard/customers", label: "Customers", icon: Users },
+  { href: "/dashboard/store", label: "Store", icon: ShoppingBag },
   { href: "/dashboard/agent", label: "AI Agent", icon: Bot },
 ];
 

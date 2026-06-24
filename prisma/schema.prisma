@@ -94,3 +94,35 @@ model Note {
 
   @@map("notes")
 }
+
+model Listing {
+  id            String         @id @default(cuid())
+  title         String
+  model         String
+  year          Int
+  price         Float
+  condition     String         @default("good")
+  ram           String?
+  storage       String?
+  processor     String?
+  color         String?
+  batteryHealth Int?
+  description   String?
+  status        String         @default("available")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  images        ListingImage[]
+
+  @@map("listings")
+}
+
+model ListingImage {
+  id        String   @id @default(cuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  url       String
+  filename  String
+  createdAt DateTime @default(now())
+
+  @@map("listing_images")
+}

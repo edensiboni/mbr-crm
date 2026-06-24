@@ -6,7 +6,7 @@ import Link from "next/link";
 import {
   ArrowLeft, Phone, Mail, MapPin, Clock,
   MessageSquare, StickyNote, Trash2, CheckCircle, Camera, Upload,
-  X, ImageIcon, ZoomIn, FolderOpen,
+  X, ImageIcon, ZoomIn, FolderOpen, Edit2, Check,
 } from "lucide-react";
 import { STATUS_LABELS, STATUS_COLORS, PRIORITY_LABELS, PRIORITY_COLORS } from "@/lib/utils";
 import { format } from "date-fns";
@@ -233,6 +233,8 @@ export default function CaseDetailPage() {
   const [commDir, setCommDir] = useState("outbound");
   const [activeTab, setActiveTab] = useState("details");
   const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [editingDevice, setEditingDevice] = useState(false);
+  const [deviceForm, setDeviceForm] = useState<Record<string, string>>({});
   const statusSelectRef = useRef<HTMLSelectElement>(null);
 
   const load = useCallback(async () => {
@@ -377,17 +379,84 @@ export default function CaseDetailPage() {
             {activeTab === "details" && (
               <div className="space-y-4">
                 <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
-                  <h3 className="font-semibold text-gray-900">Device & Issue</h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div><span className="text-gray-400 block mb-0.5">Model</span><span className="font-medium">{c.laptopModel}</span></div>
-                    <div><span className="text-gray-400 block mb-0.5">Serial</span><span className="font-medium">{c.serialNumber || "—"}</span></div>
-                    <div><span className="text-gray-400 block mb-0.5">Issue Type</span><span className="font-medium">{c.issueType}</span></div>
-                    <div><span className="text-gray-400 block mb-0.5">Condition</span><span className="font-medium capitalize">{c.physicalCondition}</span></div>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-gray-900">Device & Issue</h3>
+                    {editingDevice ? (
+                      <div className="flex gap-2">
+                        <button onClick={() => setEditingDevice(false)} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"><X className="w-3.5 h-3.5" /></button>
+                        <button onClick={async () => { await patch(deviceForm); setEditingDevice(false); }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors">
+                          <Check className="w-3 h-3" /> Save
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={() => { setDeviceForm({ title: c.title, laptopModel: c.laptopModel, serialNumber: c.serialNumber ?? "", purchaseYear: c.purchaseYear?.toString() ?? "", issueType: c.issueType, issueDescription: c.issueDescription, physicalCondition: c.physicalCondition, priority: c.priority }); setEditingDevice(true); }}
+                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
-                  <div>
-                    <span className="text-gray-400 text-sm block mb-1">Issue Description</span>
-                    <p className="text-sm text-gray-700 bg-gray-50 rounded-xl p-3 leading-relaxed">{c.issueDescription}</p>
-                  </div>
+                  {editingDevice ? (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs text-gray-500 uppercase tracking-wide mb-1 block">Case Title</label>
+                        <input className={inputCls} value={deviceForm.title ?? ""} onChange={e => setDeviceForm(f => ({ ...f, title: e.target.value }))} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs text-gray-500 uppercase tracking-wide mb-1 block">Model</label>
+                          <input className={inputCls} value={deviceForm.laptopModel ?? ""} onChange={e => setDeviceForm(f => ({ ...f, laptopModel: e.target.value }))} />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500 uppercase tracking-wide mb-1 block">Serial #</label>
+                          <input className={inputCls} value={deviceForm.serialNumber ?? ""} onChange={e => setDeviceForm(f => ({ ...f, serialNumber: e.target.value }))} placeholder="optional" />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500 uppercase tracking-wide mb-1 block">Purchase Year</label>
+                          <input type="number" className={inputCls} value={deviceForm.purchaseYear ?? ""} onChange={e => setDeviceForm(f => ({ ...f, purchaseYear: e.target.value }))} placeholder="optional" />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500 uppercase tracking-wide mb-1 block">Issue Type</label>
+                          <input className={inputCls} value={deviceForm.issueType ?? ""} onChange={e => setDeviceForm(f => ({ ...f, issueType: e.target.value }))} />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500 uppercase tracking-wide mb-1 block">Condition</label>
+                          <select className={inputCls} value={deviceForm.physicalCondition ?? ""} onChange={e => setDeviceForm(f => ({ ...f, physicalCondition: e.target.value }))}>
+                            <option value="excellent">Excellent</option>
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                            <option value="poor">Poor</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500 uppercase tracking-wide mb-1 block">Priority</label>
+                          <select className={inputCls} value={deviceForm.priority ?? ""} onChange={e => setDeviceForm(f => ({ ...f, priority: e.target.value }))}>
+                            <option value="low">Low</option>
+                            <option value="normal">Normal</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 uppercase tracking-wide mb-1 block">Issue Description</label>
+                        <textarea rows={3} className={`${inputCls} resize-none`} value={deviceForm.issueDescription ?? ""} onChange={e => setDeviceForm(f => ({ ...f, issueDescription: e.target.value }))} />
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div><span className="text-gray-400 block mb-0.5">Model</span><span className="font-medium">{c.laptopModel}</span></div>
+                        <div><span className="text-gray-400 block mb-0.5">Serial</span><span className="font-medium">{c.serialNumber || "—"}</span></div>
+                        <div><span className="text-gray-400 block mb-0.5">Issue Type</span><span className="font-medium">{c.issueType}</span></div>
+                        <div><span className="text-gray-400 block mb-0.5">Condition</span><span className="font-medium capitalize">{c.physicalCondition}</span></div>
+                      </div>
+                      <div>
+                        <span className="text-gray-400 text-sm block mb-1">Issue Description</span>
+                        <p className="text-sm text-gray-700 bg-gray-50 rounded-xl p-3 leading-relaxed">{c.issueDescription}</p>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Photos */}
@@ -546,7 +615,7 @@ export default function CaseDetailPage() {
                     <MapPin className="w-4 h-4 mt-0.5" /> {c.customer.address}
                   </div>
                 )}
-                <Link href="/dashboard/customers" className="text-xs text-blue-500 hover:text-blue-600">View customer profile →</Link>
+                <Link href={`/dashboard/customers/${c.customer.id}`} className="text-xs text-blue-500 hover:text-blue-600">View & edit customer →</Link>
               </div>
             </div>
 
